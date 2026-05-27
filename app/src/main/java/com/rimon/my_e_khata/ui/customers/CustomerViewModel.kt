@@ -28,6 +28,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     private val _totalPayable = MutableLiveData(0.0)
     val totalPayable: LiveData<Double> = _totalPayable
 
+    // Event: finish the Add/Edit screen
     private val _navigateBack = MutableLiveData(false)
     val navigateBack: LiveData<Boolean> = _navigateBack
 
@@ -36,76 +37,79 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     fun setSearchQuery(query: String) { _searchQuery.value = query }
 
     fun refreshTotals() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val receivable = customerDao.getTotalReceivable() ?: 0.0
-            val payable    = customerDao.getTotalPayable()    ?: 0.0
-            _totalReceivable.postValue(receivable)
-            _totalPayable.postValue(payable)
+        viewModelScope.launch {
+            val receivable = withContext(Dispatchers.IO) { customerDao.getTotalReceivable() ?: 0.0 }
+            val payable    = withContext(Dispatchers.IO) { customerDao.getTotalPayable()    ?: 0.0 }
+            _totalReceivable.value = receivable
+            _totalPayable.value    = payable
         }
     }
 
     fun addCustomer(customer: Customer) {
-        viewModelScope.launch(Dispatchers.IO) {
-            customerDao.insertCustomer(customer)
-            val receivable = customerDao.getTotalReceivable() ?: 0.0
-            val payable    = customerDao.getTotalPayable()    ?: 0.0
-            _totalReceivable.postValue(receivable)
-            _totalPayable.postValue(payable)
-            _navigateBack.postValue(true)   // postValue = safe from any thread
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { customerDao.insertCustomer(customer) }
+            refreshTotals()
+            _navigateBack.value = true
         }
     }
 
     fun resetNavigateBack() { _navigateBack.value = false }
 
     fun updateCustomer(customer: Customer) {
-        viewModelScope.launch(Dispatchers.IO) {
-            customerDao.updateCustomer(customer)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { customerDao.updateCustomer(customer) }
             refreshTotals()
         }
     }
 
     fun deleteCustomer(customer: Customer) {
-        viewModelScope.launch(Dispatchers.IO) {
-            transactionDao.deleteAllTransactionsForParty(customer.id, "customer")
-            customerDao.deleteCustomer(customer)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                transactionDao.deleteAllTransactionsForParty(customer.id, "customer")
+                customerDao.deleteCustomer(customer)
+            }
             refreshTotals()
         }
     }
 
     fun addTransaction(customerId: Long, type: String, amount: Double, note: String = "") {
-        viewModelScope.launch(Dispatchers.IO) {
-            val customer = customerDao.getCustomerById(customerId) ?: return@launch
+        viewModelScope.launch {
+            val customer = withContext(Dispatchers.IO) { customerDao.getCustomerById(customerId) } ?: return@launch
             val newBalance = when (type) {
                 "got"  -> customer.balance + amount
                 "gave" -> customer.balance - amount
                 else   -> customer.balance
             }
-            transactionDao.insertTransaction(
-                Transaction(
-                    partyId = customerId, partyType = "customer",
-                    type = type, amount = amount,
-                    balance = newBalance, note = note
+            withContext(Dispatchers.IO) {
+                transactionDao.insertTransaction(
+                    Transaction(
+                        partyId = customerId, partyType = "customer",
+                        type = type, amount = amount,
+                        balance = newBalance, note = note
+                    )
                 )
-            )
-            customerDao.updateCustomer(
-                customer.copy(balance = newBalance, updatedAt = System.currentTimeMillis())
-            )
+                customerDao.updateCustomer(
+                    customer.copy(balance = newBalance, updatedAt = System.currentTimeMillis())
+                )
+            }
             refreshTotals()
         }
     }
 
     fun deleteTransaction(transaction: Transaction, customerId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val customer = customerDao.getCustomerById(customerId) ?: return@launch
+        viewModelScope.launch {
+            val customer = withContext(Dispatchers.IO) { customerDao.getCustomerById(customerId) } ?: return@launch
             val revertedBalance = when (transaction.type) {
                 "got"  -> customer.balance - transaction.amount
                 "gave" -> customer.balance + transaction.amount
                 else   -> customer.balance
             }
-            transactionDao.deleteTransaction(transaction)
-            customerDao.updateCustomer(
-                customer.copy(balance = revertedBalance, updatedAt = System.currentTimeMillis())
-            )
+            withContext(Dispatchers.IO) {
+                transactionDao.deleteTransaction(transaction)
+                customerDao.updateCustomer(
+                    customer.copy(balance = revertedBalance, updatedAt = System.currentTimeMillis())
+                )
+            }
             refreshTotals()
         }
     }
@@ -114,8 +118,10 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
         transactionDao.getTransactionsForParty(customerId, "customer")
 
     fun toggleAutoSms(customer: Customer) {
-        viewModelScope.launch(Dispatchers.IO) {
-            customerDao.updateCustomer(customer.copy(autoSmsEnabled = !customer.autoSmsEnabled))
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                customerDao.updateCustomer(customer.copy(autoSmsEnabled = !customer.autoSmsEnabled))
+            }
         }
     }
 }
