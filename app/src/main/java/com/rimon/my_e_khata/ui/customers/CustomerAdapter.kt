@@ -13,15 +13,26 @@ import com.rimon.my_e_khata.utils.FormatUtils
 import kotlin.math.abs
 
 class CustomerAdapter(
-    private val onClick: (Customer) -> Unit
+    private val onClick: (Customer) -> Unit,
+    private val onMenuClick: ((Customer) -> Unit)? = null
 ) : ListAdapter<Customer, CustomerAdapter.ViewHolder>(DiffCallback()) {
+
+    // Map of customerId -> entry count, updated externally
+    private val entryCounts = mutableMapOf<Long, Int>()
+
+    fun updateEntryCount(customerId: Long, count: Int) {
+        entryCounts[customerId] = count
+        // find position and notify
+        currentList.indexOfFirst { it.id == customerId }.takeIf { it >= 0 }?.let { notifyItemChanged(it) }
+    }
 
     inner class ViewHolder(private val binding: ItemCustomerBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(customer: Customer) {
             binding.tvName.text = customer.name
-            binding.tvEntries.text = "${getEntryCount(customer)} entries"
+            val count = entryCounts[customer.id] ?: 0
+            binding.tvEntries.text = "$count entries"
 
             val balance = customer.balance
             when {
@@ -29,7 +40,7 @@ class CustomerAdapter(
                     binding.tvBalance.text = FormatUtils.formatAmount(balance)
                     binding.tvBalance.setTextColor(ContextCompat.getColor(binding.root.context, R.color.red_due))
                     binding.tvBalanceLabel.text = "You will get"
-                    binding.tvBalanceLabel.setTextColor(ContextCompat.getColor(binding.root.context, R.color.text_secondary))
+                    binding.tvBalanceLabel.setTextColor(ContextCompat.getColor(binding.root.context, R.color.red_due))
                 }
                 balance < 0 -> {
                     binding.tvBalance.text = FormatUtils.formatAmount(abs(balance))
@@ -44,13 +55,8 @@ class CustomerAdapter(
                     binding.tvBalanceLabel.setTextColor(ContextCompat.getColor(binding.root.context, R.color.green_settled))
                 }
             }
-
             binding.root.setOnClickListener { onClick(customer) }
-        }
-
-        private fun getEntryCount(customer: Customer): String {
-            // This would ideally come from the DB; for now display "entries"
-            return "•"
+            binding.root.setOnLongClickListener { onMenuClick?.invoke(customer); true }
         }
     }
 
