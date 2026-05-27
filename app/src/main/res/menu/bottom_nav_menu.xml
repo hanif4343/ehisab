@@ -3,17 +3,13 @@
     <item
         android:id="@+id/customersFragment"
         android:icon="@drawable/ic_customers"
-        android:title="@string/customers" />
-    <item
-        android:id="@+id/suppliersFragment"
-        android:icon="@drawable/ic_suppliers"
-        android:title="@string/suppliers" />
+        android:title="Customers" />
     <item
         android:id="@+id/cashbookFragment"
         android:icon="@drawable/ic_cashbook"
-        android:title="@string/cashbook" />
+        android:title="Cashbook" />
     <item
         android:id="@+id/settingsFragment"
         android:icon="@drawable/ic_settings"
-        android:title="@string/settings" />
+        android:title="Settings" />
 </menu>
