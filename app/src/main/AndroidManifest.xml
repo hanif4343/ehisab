@@ -33,13 +33,8 @@
             android:parentActivityName=".ui.MainActivity" />
         <activity android:name=".ui.customers.AddEditCustomerActivity"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ui.suppliers.SupplierDetailActivity"
-            android:parentActivityName=".ui.MainActivity" />
-        <activity android:name=".ui.suppliers.AddEditSupplierActivity"
-            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.settings.SettingsActivity" />
 
-        <!-- FileProvider for sharing PDFs and backup files -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -50,7 +45,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- WorkManager initialization -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
@@ -61,7 +55,6 @@
                 android:value="androidx.startup" />
         </provider>
 
-        <!-- Boot receiver to reschedule auto SMS after reboot -->
         <receiver android:name=".service.BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
