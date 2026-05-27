@@ -39,7 +39,7 @@ class AutoSmsWorker(
                 FormatUtils.formatAmount(customer.balance, ""),
                 businessName
             )
-            val result = SmsService.sendSms(applicationContext, customer.mobile, message)
+            val result = SmsService.sendSms(applicationContext, customer.name, customer.mobile, message)
             if (result.isSuccess) sentCount++ else failCount++
         }
 
@@ -53,7 +53,7 @@ class AutoSmsWorker(
                 FormatUtils.formatAmount(supplier.balance, ""),
                 businessName
             )
-            val result = SmsService.sendSms(applicationContext, supplier.mobile, message)
+            val result = SmsService.sendSms(applicationContext, supplier.name, supplier.mobile, message)
             if (result.isSuccess) sentCount++ else failCount++
         }
 
