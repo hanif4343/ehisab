@@ -20,75 +20,66 @@ object BackupManager {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(Date())
         val file = File(dir, "ekhata_backup_$timestamp.csv")
 
-        FileWriter(file).use { writer ->
-            writer.write("=== MY E-KHATA BACKUP ===\n")
-            writer.write("Generated: ${FormatUtils.formatDateShort(System.currentTimeMillis())}\n\n")
-
-            // Customers
-            writer.write("CUSTOMERS\n")
-            writer.write("ID,Name,Mobile,Email,Address,Balance,AutoSMS\n")
-            // We need a synchronous query; use a coroutine-friendly approach
-            val customerJob = kotlinx.coroutines.async(Dispatchers.IO) {
-                // Direct DB access on IO thread
-                db.openHelper.readableDatabase.let { dbRaw ->
-                    val rows = mutableListOf<String>()
-                    val cursor = dbRaw.rawQuery("SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM customers ORDER BY id", null)
-                    while (cursor.moveToNext()) {
-                        rows.add("${cursor.getLong(0)},\"${cursor.getString(1)}\",${cursor.getString(2)},${cursor.getString(3)},\"${cursor.getString(4)}\",${cursor.getDouble(5)},${cursor.getInt(6)}")
-                    }
-                    cursor.close()
-                    rows
-                }
+        // Fetch all data synchronously on IO dispatcher
+        val customers = db.openHelper.readableDatabase.let { raw ->
+            val list = mutableListOf<String>()
+            val c = raw.rawQuery("SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM customers ORDER BY id", null)
+            while (c.moveToNext()) {
+                list.add("${c.getLong(0)},\"${c.getString(1)}\",${c.getString(2)},${c.getString(3)},\"${c.getString(4)}\",${c.getDouble(5)},${c.getInt(6)}")
             }
+            c.close()
+            list
+        }
 
-            val supplierJob = kotlinx.coroutines.async(Dispatchers.IO) {
-                val rows = mutableListOf<String>()
-                val cursor = db.openHelper.readableDatabase.rawQuery("SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM suppliers ORDER BY id", null)
-                while (cursor.moveToNext()) {
-                    rows.add("${cursor.getLong(0)},\"${cursor.getString(1)}\",${cursor.getString(2)},${cursor.getString(3)},\"${cursor.getString(4)}\",${cursor.getDouble(5)},${cursor.getInt(6)}")
-                }
-                cursor.close()
-                rows
+        val suppliers = db.openHelper.readableDatabase.let { raw ->
+            val list = mutableListOf<String>()
+            val c = raw.rawQuery("SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM suppliers ORDER BY id", null)
+            while (c.moveToNext()) {
+                list.add("${c.getLong(0)},\"${c.getString(1)}\",${c.getString(2)},${c.getString(3)},\"${c.getString(4)}\",${c.getDouble(5)},${c.getInt(6)}")
             }
+            c.close()
+            list
+        }
 
-            val txJob = kotlinx.coroutines.async(Dispatchers.IO) {
-                val rows = mutableListOf<String>()
-                val cursor = db.openHelper.readableDatabase.rawQuery("SELECT id,partyId,partyType,type,amount,balance,note,createdAt FROM transactions ORDER BY createdAt", null)
-                while (cursor.moveToNext()) {
-                    rows.add("${cursor.getLong(0)},${cursor.getLong(1)},${cursor.getString(2)},${cursor.getString(3)},${cursor.getDouble(4)},${cursor.getDouble(5)},\"${cursor.getString(6)}\",${cursor.getLong(7)}")
-                }
-                cursor.close()
-                rows
+        val transactions = db.openHelper.readableDatabase.let { raw ->
+            val list = mutableListOf<String>()
+            val c = raw.rawQuery("SELECT id,partyId,partyType,type,amount,balance,note,createdAt FROM transactions ORDER BY createdAt", null)
+            while (c.moveToNext()) {
+                list.add("${c.getLong(0)},${c.getLong(1)},${c.getString(2)},${c.getString(3)},${c.getDouble(4)},${c.getDouble(5)},\"${c.getString(6)}\",${c.getLong(7)}")
             }
+            c.close()
+            list
+        }
 
-            val cbJob = kotlinx.coroutines.async(Dispatchers.IO) {
-                val rows = mutableListOf<String>()
-                val cursor = db.openHelper.readableDatabase.rawQuery("SELECT id,type,amount,balance,category,note,createdAt FROM cashbook ORDER BY createdAt", null)
-                while (cursor.moveToNext()) {
-                    rows.add("${cursor.getLong(0)},${cursor.getString(1)},${cursor.getDouble(2)},${cursor.getDouble(3)},\"${cursor.getString(4)}\",\"${cursor.getString(5)}\",${cursor.getLong(6)}")
-                }
-                cursor.close()
-                rows
+        val cashbook = db.openHelper.readableDatabase.let { raw ->
+            val list = mutableListOf<String>()
+            val c = raw.rawQuery("SELECT id,type,amount,balance,category,note,createdAt FROM cashbook ORDER BY createdAt", null)
+            while (c.moveToNext()) {
+                list.add("${c.getLong(0)},${c.getString(1)},${c.getDouble(2)},${c.getDouble(3)},\"${c.getString(4)}\",\"${c.getString(5)}\",${c.getLong(6)}")
             }
+            c.close()
+            list
+        }
 
-            val customers = customerJob.await()
-            val suppliers = supplierJob.await()
-            val transactions = txJob.await()
-            val cashbook = cbJob.await()
+        FileWriter(file).use { w ->
+            w.write("=== MY E-KHATA BACKUP ===\n")
+            w.write("Generated: ${FormatUtils.formatDateShort(System.currentTimeMillis())}\n\n")
 
-            customers.forEach { writer.write("$it\n") }
+            w.write("CUSTOMERS\n")
+            w.write("ID,Name,Mobile,Email,Address,Balance,AutoSMS\n")
+            customers.forEach { row -> w.write("$row\n") }
 
-            writer.write("\nSUPPLIERS\n")
-            writer.write("ID,Name,Mobile,Email,Address,Balance,AutoSMS\n")
-            suppliers.forEach { writer.write("$it\n") }
+            w.write("\nSUPPLIERS\n")
+            w.write("ID,Name,Mobile,Email,Address,Balance,AutoSMS\n")
+            suppliers.forEach { row -> w.write("$row\n") }
 
-            writer.write("\nTRANSACTIONS\n")
-            writer.write("ID,PartyID,PartyType,Type,Amount,Balance,Note,CreatedAt\n")
-            transactions.forEach { writer.write("$it\n") }
+            w.write("\nTRANSACTIONS\n")
+            w.write("ID,PartyID,PartyType,Type,Amount,Balance,Note,CreatedAt\n")
+            transactions.forEach { row -> w.write("$row\n") }
 
-            writer.write("\nCASHBOOK\n")
-            writer.write("ID,Type,Amount,Balance,Category,Note,CreatedAt\n")
-            cashbook.forEach { writer.write("$it\n") }
+            w.write("\nCASHBOOK\n")
+            w.write("ID,Type,Amount,Balance,Category,Note,CreatedAt\n")
+            cashbook.forEach { row -> w.write("$row\n") }
         }
 
         AppPreferences.getInstance(context).lastBackupTime = System.currentTimeMillis()
@@ -111,7 +102,7 @@ object BackupManager {
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(prefs.gmailBackupEmail))
             }
             putExtra(Intent.EXTRA_SUBJECT, "My e-Khata Backup - ${FormatUtils.formatDateShort(System.currentTimeMillis())}")
-            putExtra(Intent.EXTRA_TEXT, "Please find the e-Khata backup attached.\n\nGenerated by My e-Khata app.")
+            putExtra(Intent.EXTRA_TEXT, "My e-Khata backup attached.")
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -121,11 +112,10 @@ object BackupManager {
         try {
             context.startActivity(intent)
         } catch (e: Exception) {
-            val chooser = Intent.createChooser(intent.apply {
-                setPackage(null)
-            }, "Send Backup via Email").apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            val chooser = Intent.createChooser(
+                intent.apply { setPackage(null) },
+                "Send Backup via Email"
+            ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
             context.startActivity(chooser)
         }
     }
