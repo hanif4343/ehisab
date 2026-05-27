@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My e-Khata</string>
+    <string name="customers">Customers</string>
+    <string name="suppliers">Suppliers</string>
+    <string name="cashbook">Cashbook</string>
+    <string name="settings">Settings</string>
+    <string name="you_will_get">You will get</string>
+    <string name="you_will_give">You will give</string>
+    <string name="settled_up">Settled Up</string>
+    <string name="view_report">View Report</string>
+    <string name="add_customer">Add Customer</string>
+    <string name="add_supplier">Add Supplier</string>
+    <string name="search_hint">Search name, mobile</string>
+    <string name="you_gave">YOU GAVE</string>
+    <string name="you_got">YOU GOT</string>
+    <string name="send_sms">Send SMS Now</string>
+    <string name="auto_sms">Auto SMS</string>
+    <string name="report">Report</string>
+    <string name="reminder">Reminder</string>
+    <string name="sms">SMS</string>
+    <string name="done">DONE</string>
+    <string name="customer_name">Customer Name</string>
+    <string name="mobile_optional">Mobile Number (Optional)</string>
+    <string name="email_optional">Email (Optional)</string>
+    <string name="address_optional">Full Address (Optional)</string>
+    <string name="gov_id_optional">Government ID (Optional)</string>
+    <string name="cash_in">CASH IN</string>
+    <string name="cash_out">CASH OUT</string>
+    <string name="balance">Balance</string>
+    <string name="total_in">Total In</string>
+    <string name="total_out">Total Out</string>
+    <string name="no_entries">No entries yet.\nTap + to add one.</string>
+    <string name="set_collection_reminder">Set collection reminder</string>
+    <string name="set_date">SET DATE</string>
+    <string name="entries">entries</string>
+    <string name="auto_sms_label">Send auto SMS on due</string>
+</resources>
