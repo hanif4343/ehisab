@@ -1,37 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/background">
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/primary"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:navigationIconTint="@color/white"
-        app:titleTextColor="@color/white"
-        app:title="Settings" />
+        android:id="@+id/toolbar" android:layout_width="match_parent" android:layout_height="56dp"
+        android:background="@color/primary" app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/white" app:titleTextColor="@color/white" app:title="Settings" />
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
+            <!-- Edit / Save bar -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="end" android:layout_marginBottom="8dp">
 
-            <!-- General Settings -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_edit_settings"
+                    android:layout_width="wrap_content" android:layout_height="40dp"
+                    android:text="✎ Edit" android:textSize="13sp"
+                    android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    app:strokeColor="@color/primary" android:textColor="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_all"
+                    android:layout_width="wrap_content" android:layout_height="40dp"
+                    android:text="✓ Save" android:textSize="13sp"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/primary" android:textColor="@color/white" />
+            </LinearLayout>
+
+            <!-- GENERAL -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="GENERAL" android:textColor="@color/primary" android:textSize="11sp"
                 android:textAllCaps="true" android:letterSpacing="0.1" android:textStyle="bold"
-                android:layout_marginStart="4dp" android:layout_marginBottom="6dp" android:layout_marginTop="4dp"/>
+                android:layout_marginStart="4dp" android:layout_marginBottom="6dp"/>
 
             <androidx.cardview.widget.CardView android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginBottom="12dp"
@@ -44,25 +50,20 @@
                         android:hint="Business Name" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_business_name"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:inputType="textCapWords" android:textSize="14sp" />
+                            android:inputType="textCapWords" android:textSize="14sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_marginBottom="12dp"
-                        android:hint="Currency Symbol (e.g. ৳ or ₹)" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:layout_height="wrap_content"
+                        android:hint="Currency Symbol (e.g. ৳)" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_currency_symbol"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:textSize="14sp" />
+                            android:textSize="14sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.button.MaterialButton android:id="@+id/btn_save_general"
-                        android:layout_width="match_parent" android:layout_height="44dp"
-                        android:text="Save General Settings" app:backgroundTint="@color/primary"
-                        android:textColor="@color/white" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- SMS API Settings -->
+            <!-- SMS API -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="SMS API" android:textColor="@color/primary" android:textSize="11sp"
                 android:textAllCaps="true" android:letterSpacing="0.1" android:textStyle="bold"
@@ -76,11 +77,11 @@
 
                     <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:layout_marginBottom="10dp"
-                        android:hint="API URL e.g. https://demosoftpp.com/api.php?type=sms"
+                        android:hint="API URL (e.g. https://demosoftpp.com/api.php?type=sms)"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_sms_api_url"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:inputType="textUri" android:textSize="13sp" />
+                            android:inputType="textUri" android:textSize="13sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
@@ -88,43 +89,29 @@
                         android:hint="API Key" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_sms_api_key"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:textSize="13sp" />
+                            android:textSize="13sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:layout_marginBottom="10dp"
-                        android:hint="Sender ID / Masking Name" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="Sender ID / Masking" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_sms_sender_id"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:textSize="13sp" />
+                            android:textSize="13sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_marginBottom="10dp"
-                        android:hint="Customer SMS Template (use {name}, {amount}, {business})"
+                        android:layout_height="wrap_content" android:layout_marginBottom="4dp"
+                        android:hint="SMS Template (use {name}, {amount}, {business})"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_sms_template_customer"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:inputType="textMultiLine" android:minLines="2" android:textSize="13sp" />
+                            android:inputType="textMultiLine" android:minLines="2" android:textSize="13sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:layout_marginBottom="12dp"
-                        android:hint="Supplier SMS Template"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_sms_template_supplier"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:inputType="textMultiLine" android:minLines="2" android:textSize="13sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.button.MaterialButton android:id="@+id/btn_save_sms_api"
-                        android:layout_width="match_parent" android:layout_height="44dp"
-                        android:text="Save SMS API Settings" app:backgroundTint="@color/primary"
-                        android:textColor="@color/white" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Auto SMS Schedule -->
+            <!-- AUTO SMS SCHEDULE -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="AUTO SMS SCHEDULE" android:textColor="@color/primary" android:textSize="11sp"
                 android:textAllCaps="true" android:letterSpacing="0.1" android:textStyle="bold"
@@ -137,8 +124,7 @@
                     android:orientation="vertical" android:padding="16dp">
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="horizontal" android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                             android:layout_weight="1" android:text="Enable Global Auto SMS"
                             android:textSize="14sp" android:textColor="@color/text_primary" />
@@ -147,29 +133,26 @@
                             android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <TextView android:id="@+id/tv_sms_time"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Auto send at: 10:00 AM"
-                        android:textSize="14sp" android:textColor="@color/text_primary"
-                        android:layout_marginBottom="10dp" />
+                    <TextView android:id="@+id/tv_sms_time" android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="Auto send at: 10:00 AM"
+                        android:textSize="14sp" android:textColor="@color/text_primary" android:layout_marginBottom="10dp"/>
 
                     <com.google.android.material.button.MaterialButton android:id="@+id/btn_pick_sms_time"
                         android:layout_width="match_parent" android:layout_height="44dp"
-                        android:text="Pick Auto Send Time" app:backgroundTint="@color/primary_light"
-                        android:textColor="@color/primary_dark"
+                        android:text="Pick Auto Send Time"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        app:strokeColor="@color/primary" />
+                        app:strokeColor="@color/primary" android:textColor="@color/primary" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Backup Settings -->
+            <!-- BACKUP -->
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="BACKUP" android:textColor="@color/primary" android:textSize="11sp"
                 android:textAllCaps="true" android:letterSpacing="0.1" android:textStyle="bold"
                 android:layout_marginStart="4dp" android:layout_marginBottom="6dp"/>
 
             <androidx.cardview.widget.CardView android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:layout_marginBottom="24dp"
+                android:layout_height="wrap_content" android:layout_marginBottom="12dp"
                 app:cardCornerRadius="12dp" app:cardElevation="2dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="16dp">
@@ -179,12 +162,11 @@
                         android:hint="Gmail Address for Backup" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_gmail_email"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:inputType="textEmailAddress" android:textSize="14sp" />
+                            android:inputType="textEmailAddress" android:textSize="14sp" android:enabled="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="horizontal" android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                             android:layout_weight="1" android:text="Auto Daily Backup"
                             android:textSize="14sp" android:textColor="@color/text_primary" />
@@ -195,8 +177,54 @@
 
                     <com.google.android.material.button.MaterialButton android:id="@+id/btn_backup_now"
                         android:layout_width="match_parent" android:layout_height="44dp"
-                        android:text="Backup Now via Gmail" app:backgroundTint="@color/primary"
-                        android:textColor="@color/white" />
+                        android:text="Backup Now via Gmail"
+                        app:backgroundTint="@color/primary" android:textColor="@color/white" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- SMS HISTORY -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="SMS HISTORY" android:textColor="@color/primary" android:textSize="11sp"
+                android:textAllCaps="true" android:letterSpacing="0.1" android:textStyle="bold"
+                android:layout_marginStart="4dp" android:layout_marginBottom="6dp"/>
+
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp" app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingStart="16dp" android:paddingEnd="12dp"
+                        android:paddingTop="12dp" android:paddingBottom="8dp">
+
+                        <TextView android:id="@+id/tv_sms_log_count"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:text="0 messages sent"
+                            android:textSize="13sp" android:textColor="@color/text_secondary" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_clear_sms_log"
+                            android:layout_width="wrap_content" android:layout_height="36dp"
+                            android:text="Clear"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            app:strokeColor="@color/red_due" android:textColor="@color/red_due"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView android:id="@+id/tv_sms_log_empty"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="No SMS sent yet"
+                        android:gravity="center" android:textColor="@color/text_secondary"
+                        android:textSize="13sp" android:padding="24dp"
+                        android:visibility="visible" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_sms_log"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
