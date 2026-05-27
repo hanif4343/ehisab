@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Environment
 import androidx.core.content.FileProvider
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.rimon.my_e_khata.data.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,52 +15,36 @@ import java.util.*
 
 object BackupManager {
 
+    private fun queryRows(db: SupportSQLiteDatabase, sql: String): List<String> {
+        val list = mutableListOf<String>()
+        val cursor = db.query(sql)
+        try {
+            while (cursor.moveToNext()) {
+                val cols = (0 until cursor.columnCount).map { i ->
+                    when (cursor.getType(i)) {
+                        android.database.Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(i).toString()
+                        android.database.Cursor.FIELD_TYPE_FLOAT   -> cursor.getDouble(i).toString()
+                        else -> "\"${cursor.getString(i) ?: ""}\""
+                    }
+                }
+                list.add(cols.joinToString(","))
+            }
+        } finally {
+            cursor.close()
+        }
+        return list
+    }
+
     suspend fun generateBackupCsv(context: Context): File = withContext(Dispatchers.IO) {
-        val db = AppDatabase.getDatabase(context)
+        val db = AppDatabase.getDatabase(context).openHelper.readableDatabase
         val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) ?: context.filesDir
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(Date())
         val file = File(dir, "ekhata_backup_$timestamp.csv")
 
-        // Fetch all data synchronously on IO dispatcher
-        val customers = db.openHelper.readableDatabase.let { raw ->
-            val list = mutableListOf<String>()
-            val c = raw.rawQuery("SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM customers ORDER BY id", null)
-            while (c.moveToNext()) {
-                list.add("${c.getLong(0)},\"${c.getString(1)}\",${c.getString(2)},${c.getString(3)},\"${c.getString(4)}\",${c.getDouble(5)},${c.getInt(6)}")
-            }
-            c.close()
-            list
-        }
-
-        val suppliers = db.openHelper.readableDatabase.let { raw ->
-            val list = mutableListOf<String>()
-            val c = raw.rawQuery("SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM suppliers ORDER BY id", null)
-            while (c.moveToNext()) {
-                list.add("${c.getLong(0)},\"${c.getString(1)}\",${c.getString(2)},${c.getString(3)},\"${c.getString(4)}\",${c.getDouble(5)},${c.getInt(6)}")
-            }
-            c.close()
-            list
-        }
-
-        val transactions = db.openHelper.readableDatabase.let { raw ->
-            val list = mutableListOf<String>()
-            val c = raw.rawQuery("SELECT id,partyId,partyType,type,amount,balance,note,createdAt FROM transactions ORDER BY createdAt", null)
-            while (c.moveToNext()) {
-                list.add("${c.getLong(0)},${c.getLong(1)},${c.getString(2)},${c.getString(3)},${c.getDouble(4)},${c.getDouble(5)},\"${c.getString(6)}\",${c.getLong(7)}")
-            }
-            c.close()
-            list
-        }
-
-        val cashbook = db.openHelper.readableDatabase.let { raw ->
-            val list = mutableListOf<String>()
-            val c = raw.rawQuery("SELECT id,type,amount,balance,category,note,createdAt FROM cashbook ORDER BY createdAt", null)
-            while (c.moveToNext()) {
-                list.add("${c.getLong(0)},${c.getString(1)},${c.getDouble(2)},${c.getDouble(3)},\"${c.getString(4)}\",\"${c.getString(5)}\",${c.getLong(6)}")
-            }
-            c.close()
-            list
-        }
+        val customers    = queryRows(db, "SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM customers ORDER BY id")
+        val suppliers    = queryRows(db, "SELECT id,name,mobile,email,address,balance,autoSmsEnabled FROM suppliers ORDER BY id")
+        val transactions = queryRows(db, "SELECT id,partyId,partyType,type,amount,balance,note,createdAt FROM transactions ORDER BY createdAt")
+        val cashbook     = queryRows(db, "SELECT id,type,amount,balance,category,note,createdAt FROM cashbook ORDER BY createdAt")
 
         FileWriter(file).use { w ->
             w.write("=== MY E-KHATA BACKUP ===\n")
@@ -67,19 +52,19 @@ object BackupManager {
 
             w.write("CUSTOMERS\n")
             w.write("ID,Name,Mobile,Email,Address,Balance,AutoSMS\n")
-            customers.forEach { row -> w.write("$row\n") }
+            customers.forEach { w.write("$it\n") }
 
             w.write("\nSUPPLIERS\n")
             w.write("ID,Name,Mobile,Email,Address,Balance,AutoSMS\n")
-            suppliers.forEach { row -> w.write("$row\n") }
+            suppliers.forEach { w.write("$it\n") }
 
             w.write("\nTRANSACTIONS\n")
             w.write("ID,PartyID,PartyType,Type,Amount,Balance,Note,CreatedAt\n")
-            transactions.forEach { row -> w.write("$row\n") }
+            transactions.forEach { w.write("$it\n") }
 
             w.write("\nCASHBOOK\n")
             w.write("ID,Type,Amount,Balance,Category,Note,CreatedAt\n")
-            cashbook.forEach { row -> w.write("$row\n") }
+            cashbook.forEach { w.write("$it\n") }
         }
 
         AppPreferences.getInstance(context).lastBackupTime = System.currentTimeMillis()
@@ -90,11 +75,7 @@ object BackupManager {
         val file = generateBackupCsv(context)
         val prefs = AppPreferences.getInstance(context)
 
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            file
-        )
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/csv"
@@ -112,10 +93,8 @@ object BackupManager {
         try {
             context.startActivity(intent)
         } catch (e: Exception) {
-            val chooser = Intent.createChooser(
-                intent.apply { setPackage(null) },
-                "Send Backup via Email"
-            ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+            val chooser = Intent.createChooser(intent.apply { setPackage(null) }, "Send Backup via Email")
+                .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
             context.startActivity(chooser)
         }
     }
