@@ -76,7 +76,7 @@
 
                     <com.google.android.material.textfield.TextInputLayout android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:layout_marginBottom="10dp"
-                        android:hint="API URL (supports {mobile}, {message}, {api_key}, {sender_id})"
+                        android:hint="API URL e.g. https://demosoftpp.com/api.php?type=sms"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/et_sms_api_url"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
