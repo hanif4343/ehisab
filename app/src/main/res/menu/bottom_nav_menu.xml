@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/customersFragment"
+        android:icon="@drawable/ic_customers"
+        android:title="@string/customers" />
+    <item
+        android:id="@+id/suppliersFragment"
+        android:icon="@drawable/ic_suppliers"
+        android:title="@string/suppliers" />
+    <item
+        android:id="@+id/cashbookFragment"
+        android:icon="@drawable/ic_cashbook"
+        android:title="@string/cashbook" />
+    <item
+        android:id="@+id/settingsFragment"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/settings" />
+</menu>
