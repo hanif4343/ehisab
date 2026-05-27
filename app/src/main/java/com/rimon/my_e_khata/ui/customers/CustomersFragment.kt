@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.rimon.my_e_khata.databinding.FragmentCustomersBinding
 import com.rimon.my_e_khata.utils.FormatUtils
 
@@ -26,7 +27,6 @@ class CustomersFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupRecyclerView()
         setupSearch()
         observeViewModel()
@@ -39,6 +39,7 @@ class CustomersFragment : Fragment() {
             intent.putExtra("customer_id", customer.id)
             startActivity(intent)
         }
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
     }
 
@@ -57,11 +58,9 @@ class CustomersFragment : Fragment() {
             adapter.submitList(customers)
             binding.tvEmpty.visibility = if (customers.isEmpty()) View.VISIBLE else View.GONE
         }
-
         viewModel.totalReceivable.observe(viewLifecycleOwner) { amount ->
             binding.tvWillGet.text = FormatUtils.formatAmount(amount)
         }
-
         viewModel.totalPayable.observe(viewLifecycleOwner) { amount ->
             binding.tvWillGive.text = FormatUtils.formatAmount(amount)
         }
@@ -69,13 +68,9 @@ class CustomersFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.fabAddCustomer.setOnClickListener {
-            val intent = Intent(requireContext(), AddEditCustomerActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(requireContext(), AddEditCustomerActivity::class.java))
         }
-
-        binding.tvViewReport.setOnClickListener {
-            // Open full report
-        }
+        binding.tvViewReport.setOnClickListener { /* full report */ }
     }
 
     override fun onResume() {
