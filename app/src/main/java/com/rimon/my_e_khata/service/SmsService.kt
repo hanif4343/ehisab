@@ -7,11 +7,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.FormBody
 import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 object SmsService {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build()
+
     private const val TAG = "SmsService"
 
     suspend fun sendSms(
@@ -20,57 +24,76 @@ object SmsService {
         message: String
     ): Result<String> = withContext(Dispatchers.IO) {
         val prefs = AppPreferences.getInstance(context)
-        val apiUrl = prefs.smsApiUrl
-        val apiKey = prefs.smsApiKey
-        val senderId = prefs.smsSenderId
+        val apiUrl = prefs.smsApiUrl.trim()
+        val apiKey = prefs.smsApiKey.trim()
 
         if (apiUrl.isBlank()) {
-            return@withContext Result.failure(Exception("SMS API URL not configured"))
+            return@withContext Result.failure(Exception("SMS API URL not configured. Go to Settings."))
+        }
+        if (apiKey.isBlank()) {
+            return@withContext Result.failure(Exception("SMS API Key not configured. Go to Settings."))
+        }
+        if (mobile.isBlank()) {
+            return@withContext Result.failure(Exception("No mobile number"))
         }
 
         try {
-            // Build URL with params (common pattern for BD SMS APIs)
             val encodedMsg = URLEncoder.encode(message, "UTF-8")
-            val url = buildSmsUrl(apiUrl, apiKey, senderId, mobile, encodedMsg)
+            val cleanMobile = mobile.replace("+", "").replace("-", "").replace(" ", "")
+            val url = buildUrl(apiUrl, apiKey, cleanMobile, encodedMsg)
 
-            val request = Request.Builder()
-                .url(url)
-                .get()
-                .build()
+            Log.d(TAG, "Sending SMS to $cleanMobile via $url")
 
+            val request = Request.Builder().url(url).get().build()
             val response = client.newCall(request).execute()
             val body = response.body?.string() ?: ""
 
+            Log.d(TAG, "SMS response [${response.code}]: $body")
+
             if (response.isSuccessful) {
-                Log.d(TAG, "SMS sent to $mobile: $body")
                 Result.success(body)
             } else {
                 Result.failure(Exception("HTTP ${response.code}: $body"))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to send SMS to $mobile", e)
+            Log.e(TAG, "SMS failed to $mobile", e)
             Result.failure(e)
         }
     }
 
-    private fun buildSmsUrl(
-        apiUrl: String,
-        apiKey: String,
-        senderId: String,
-        mobile: String,
-        message: String
-    ): String {
-        // Supports common BD SMS gateway URL patterns
-        // Users can configure their own URL with placeholders or direct URL
-        return if (apiUrl.contains("{mobile}")) {
-            apiUrl
-                .replace("{api_key}", apiKey)
-                .replace("{sender_id}", senderId)
-                .replace("{mobile}", mobile)
-                .replace("{message}", message)
-        } else {
-            // Append as query params
-            "$apiUrl?api_key=$apiKey&sender_id=$senderId&to=$mobile&message=$message"
+    /**
+     * Builds the SMS API URL.
+     *
+     * Supported formats:
+     * 1. demosoftpp style: https://demosoftpp.com/api.php?type=sms&key=KEY&number=NUMBER&msg=MSG
+     *    → stored as: https://demosoftpp.com/api.php?type=sms
+     *    → we append: &key={apiKey}&number={mobile}&msg={message}
+     *
+     * 2. Custom placeholders: url contains {key}, {number}, {msg}
+     *    → we replace them
+     *
+     * 3. Fallback: append &key=&number=&msg= params
+     */
+    private fun buildUrl(apiUrl: String, apiKey: String, mobile: String, encodedMsg: String): String {
+        return when {
+            // Has custom placeholders
+            apiUrl.contains("{number}") || apiUrl.contains("{mobile}") -> {
+                apiUrl
+                    .replace("{key}", apiKey)
+                    .replace("{api_key}", apiKey)
+                    .replace("{number}", mobile)
+                    .replace("{mobile}", mobile)
+                    .replace("{msg}", encodedMsg)
+                    .replace("{message}", encodedMsg)
+            }
+            // demosoftpp style or any URL that already has query params
+            apiUrl.contains("?") -> {
+                "$apiUrl&key=$apiKey&number=$mobile&msg=$encodedMsg"
+            }
+            // Plain base URL, no params yet
+            else -> {
+                "$apiUrl?key=$apiKey&number=$mobile&msg=$encodedMsg"
+            }
         }
     }
 
