@@ -10,11 +10,6 @@
         android:label="Customers" />
 
     <fragment
-        android:id="@+id/suppliersFragment"
-        android:name="com.rimon.my_e_khata.ui.suppliers.SuppliersFragment"
-        android:label="Suppliers" />
-
-    <fragment
         android:id="@+id/cashbookFragment"
         android:name="com.rimon.my_e_khata.ui.cashbook.CashbookFragment"
         android:label="Cashbook" />
