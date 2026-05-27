@@ -32,4 +32,7 @@ interface CustomerDao {
 
     @Query("SELECT * FROM customers WHERE autoSmsEnabled = 1 AND mobile != '' AND balance > 0")
     suspend fun getCustomersForAutoSms(): List<Customer>
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE partyId = :customerId AND partyType = 'customer'")
+    suspend fun getTransactionCount(customerId: Long): Int
 }
