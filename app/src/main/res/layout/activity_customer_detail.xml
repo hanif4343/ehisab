@@ -7,43 +7,47 @@
     android:orientation="vertical"
     android:background="@color/background">
 
-    <!-- Toolbar -->
+    <!-- Purple Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@color/primary"
-        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIcon="@drawable/ic_close"
         app:navigationIconTint="@color/white"
         app:titleTextColor="@color/white"
         app:title="Customer"
         app:menu="@menu/menu_detail" />
 
-    <!-- Balance header -->
-    <LinearLayout
+    <!-- Balance + Reminder card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:elevation="2dp">
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="6dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:padding="14dp">
 
+            <!-- Balance row -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/tv_balance_label"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="You will get"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
@@ -54,80 +58,65 @@
                     android:layout_height="wrap_content"
                     android:text="৳ 0.00"
                     android:textColor="@color/red_due"
-                    android:textSize="26sp"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Set reminder -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/background"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"/>
+
+            <!-- Collection reminder row -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_contact"
+                    android:layout_marginEnd="8dp"
                     app:tint="@color/primary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Set collection reminder"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
 
                 <TextView
                     android:id="@+id/btn_set_reminder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Set collection reminder"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:paddingStart="4dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="SET DATE"
                     android:textColor="@color/primary"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
                     android:paddingStart="8dp" />
             </LinearLayout>
         </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
-        <!-- Auto SMS toggle row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Auto SMS reminder"
-                android:textSize="13sp"
-                android:textColor="@color/text_primary" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/btn_toggle_auto_sms"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Report / Reminder / SMS buttons -->
+    <!-- Report / Reminder / SMS buttons row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/white"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="10dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_report"
             android:layout_width="0dp"
-            android:layout_height="38dp"
+            android:layout_height="40dp"
             android:layout_weight="1"
             android:text="Report"
             android:textSize="12sp"
@@ -135,12 +124,14 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             app:strokeColor="@color/divider"
             app:icon="@drawable/ic_pdf"
-            app:iconSize="16dp" />
+            app:iconSize="15dp"
+            app:iconTint="@color/text_secondary"
+            android:textColor="@color/text_primary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_reminder"
             android:layout_width="0dp"
-            android:layout_height="38dp"
+            android:layout_height="40dp"
             android:layout_weight="1"
             android:text="Reminder"
             android:textSize="12sp"
@@ -148,25 +139,29 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             app:strokeColor="@color/divider"
             app:icon="@drawable/ic_notification"
-            app:iconSize="16dp" />
+            app:iconSize="15dp"
+            app:iconTint="@color/text_secondary"
+            android:textColor="@color/text_primary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_send_sms_now"
             android:layout_width="0dp"
-            android:layout_height="38dp"
+            android:layout_height="40dp"
             android:layout_weight="1"
-            android:text="Send SMS"
+            android:text="SMS"
             android:textSize="12sp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             app:strokeColor="@color/divider"
             app:icon="@drawable/ic_sms"
-            app:iconSize="16dp" />
+            app:iconSize="15dp"
+            app:iconTint="@color/text_secondary"
+            android:textColor="@color/text_primary" />
     </LinearLayout>
 
-    <!-- Transactions column headers -->
+    <!-- Column headers -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="36dp"
+        android:layout_height="32dp"
         android:background="@color/background"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -191,7 +186,6 @@
             android:textSize="11sp"
             android:textColor="@color/text_secondary"
             android:textAllCaps="true"
-            android:letterSpacing="0.06"
             android:gravity="end" />
 
         <TextView
@@ -202,7 +196,6 @@
             android:textSize="11sp"
             android:textColor="@color/text_secondary"
             android:textAllCaps="true"
-            android:letterSpacing="0.06"
             android:gravity="end" />
     </LinearLayout>
 
@@ -212,10 +205,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingBottom="80dp"
+        android:paddingBottom="8dp"
         android:clipToPadding="false" />
 
-    <!-- Bottom action buttons -->
+    <!-- Bottom: YOU GAVE / YOU GOT buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
@@ -230,6 +223,7 @@
             android:textColor="@color/white"
             android:backgroundTint="#E53935"
             android:textStyle="bold"
+            android:textSize="14sp"
             style="@style/Widget.MaterialComponents.Button" />
 
         <Button
@@ -241,6 +235,7 @@
             android:textColor="@color/white"
             android:backgroundTint="@color/green_settled"
             android:textStyle="bold"
+            android:textSize="14sp"
             style="@style/Widget.MaterialComponents.Button" />
     </LinearLayout>
 
