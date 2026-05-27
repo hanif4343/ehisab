@@ -1,6 +1,7 @@
 package com.rimon.my_e_khata.ui.common
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -22,18 +23,24 @@ class TransactionAdapter(
         fun bind(tx: Transaction) {
             binding.tvDate.text = FormatUtils.formatDate(tx.createdAt)
             binding.tvBalance.text = "Bal. $currencySymbol ${tx.balance}"
-            binding.tvNote.text = tx.note
+
+            if (tx.note.isNotBlank()) {
+                binding.tvNote.text = tx.note
+                binding.tvNote.visibility = View.VISIBLE
+            } else {
+                binding.tvNote.visibility = View.GONE
+            }
 
             if (tx.type == "gave") {
                 binding.tvAmountGave.text = "$currencySymbol ${tx.amount}"
                 binding.tvAmountGave.setTextColor(ContextCompat.getColor(binding.root.context, R.color.red_due))
-                binding.tvAmountGave.visibility = android.view.View.VISIBLE
-                binding.tvAmountGot.visibility = android.view.View.GONE
+                binding.tvAmountGave.visibility = View.VISIBLE
+                binding.tvAmountGot.visibility  = View.GONE
             } else {
                 binding.tvAmountGot.text = "$currencySymbol ${tx.amount}"
                 binding.tvAmountGot.setTextColor(ContextCompat.getColor(binding.root.context, R.color.green_settled))
-                binding.tvAmountGot.visibility = android.view.View.VISIBLE
-                binding.tvAmountGave.visibility = android.view.View.GONE
+                binding.tvAmountGot.visibility  = View.VISIBLE
+                binding.tvAmountGave.visibility = View.GONE
             }
 
             binding.root.setOnLongClickListener {
