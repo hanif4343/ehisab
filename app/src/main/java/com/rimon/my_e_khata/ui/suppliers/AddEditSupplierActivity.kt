@@ -17,16 +17,28 @@ class AddEditSupplierActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[SupplierViewModel::class.java]
         binding.toolbar.title = "Add Supplier"
         binding.toolbar.setNavigationOnClickListener { finish() }
+
         binding.btnDone.setOnClickListener {
             val name = binding.etName.text?.toString()?.trim() ?: ""
-            if (name.isBlank()) { binding.etName.error = "Name required"; return@setOnClickListener }
+            val mobile = binding.etMobile.text?.toString()?.trim() ?: ""
+
+            if (name.isBlank()) {
+                binding.etName.error = "Name is required"
+                return@setOnClickListener
+            }
+            if (mobile.isBlank()) {
+                binding.etMobile.error = "Mobile number is required"
+                return@setOnClickListener
+            }
+
+            binding.btnDone.isEnabled = false
             viewModel.addSupplier(Supplier(
                 name = name,
-                mobile = binding.etMobile.text?.toString()?.trim() ?: "",
+                mobile = mobile,
                 email = binding.etEmail.text?.toString()?.trim() ?: "",
                 address = binding.etAddress.text?.toString()?.trim() ?: "",
                 governmentId = binding.etGovId.text?.toString()?.trim() ?: ""
-            )) { finish() }
+            )) { runOnUiThread { finish() } }
         }
     }
 }
