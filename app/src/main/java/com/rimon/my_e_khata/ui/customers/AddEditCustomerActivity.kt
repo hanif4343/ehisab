@@ -21,7 +21,6 @@ class AddEditCustomerActivity : AppCompatActivity() {
         binding.toolbar.title = "Add Customer"
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        // Observe navigateBack event — finish when DB insert is done
         viewModel.navigateBack.observe(this) { shouldGo ->
             if (shouldGo) {
                 viewModel.resetNavigateBack()
@@ -33,24 +32,17 @@ class AddEditCustomerActivity : AppCompatActivity() {
         binding.btnImportContact.setOnClickListener { /* contact picker */ }
 
         binding.btnDone.setOnClickListener {
-            val name   = binding.etName.text?.toString()?.trim() ?: ""
-            val mobile = binding.etMobile.text?.toString()?.trim() ?: ""
-
+            val name = binding.etName.text?.toString()?.trim() ?: ""
             if (name.isBlank()) {
                 binding.etName.error = "Name is required"
                 return@setOnClickListener
             }
-            if (mobile.isBlank()) {
-                binding.etMobile.error = "Mobile number is required"
-                return@setOnClickListener
-            }
-
             binding.btnDone.isEnabled = false
             viewModel.addCustomer(
                 Customer(
                     name = name,
-                    mobile = mobile,
-                    email   = binding.etEmail.text?.toString()?.trim()   ?: "",
+                    mobile = binding.etMobile.text?.toString()?.trim() ?: "",
+                    email  = binding.etEmail.text?.toString()?.trim()  ?: "",
                     address = binding.etAddress.text?.toString()?.trim() ?: "",
                     governmentId = binding.etGovId.text?.toString()?.trim() ?: ""
                 )
