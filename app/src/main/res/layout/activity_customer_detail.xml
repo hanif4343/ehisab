@@ -17,7 +17,7 @@
         app:navigationIconTint="@color/white"
         app:titleTextColor="@color/white"
         app:title="Customer"
-        />
+        app:menu="@menu/menu_detail" />
 
     <!-- Balance + Reminder card -->
     <androidx.cardview.widget.CardView
