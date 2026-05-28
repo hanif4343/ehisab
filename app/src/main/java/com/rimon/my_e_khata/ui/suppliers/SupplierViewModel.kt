@@ -7,6 +7,7 @@ import com.rimon.my_e_khata.data.model.Supplier
 import com.rimon.my_e_khata.data.model.Transaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SupplierViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -35,69 +36,72 @@ class SupplierViewModel(application: Application) : AndroidViewModel(application
     fun setSearchQuery(query: String) { _searchQuery.value = query }
 
     fun refreshTotals() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val payable    = supplierDao.getTotalPayable()    ?: 0.0
-            val receivable = supplierDao.getTotalReceivable() ?: 0.0
-            _totalPayable.postValue(payable)
-            _totalReceivable.postValue(receivable)
+        viewModelScope.launch {
+            val payable    = withContext(Dispatchers.IO) { supplierDao.getTotalPayable()    ?: 0.0 }
+            val receivable = withContext(Dispatchers.IO) { supplierDao.getTotalReceivable() ?: 0.0 }
+            _totalPayable.value    = payable
+            _totalReceivable.value = receivable
         }
     }
 
     fun addSupplier(supplier: Supplier) {
-        viewModelScope.launch(Dispatchers.IO) {
-            supplierDao.insertSupplier(supplier)
-            val payable    = supplierDao.getTotalPayable()    ?: 0.0
-            val receivable = supplierDao.getTotalReceivable() ?: 0.0
-            _totalPayable.postValue(payable)
-            _totalReceivable.postValue(receivable)
-            _navigateBack.postValue(true)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { supplierDao.insertSupplier(supplier) }
+            refreshTotals()
+            _navigateBack.value = true
         }
     }
 
     fun resetNavigateBack() { _navigateBack.value = false }
 
     fun deleteSupplier(supplier: Supplier) {
-        viewModelScope.launch(Dispatchers.IO) {
-            transactionDao.deleteAllTransactionsForParty(supplier.id, "supplier")
-            supplierDao.deleteSupplier(supplier)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                transactionDao.deleteAllTransactionsForParty(supplier.id, "supplier")
+                supplierDao.deleteSupplier(supplier)
+            }
             refreshTotals()
         }
     }
 
     fun addTransaction(supplierId: Long, type: String, amount: Double, note: String = "") {
-        viewModelScope.launch(Dispatchers.IO) {
-            val supplier = supplierDao.getSupplierById(supplierId) ?: return@launch
+        viewModelScope.launch {
+            val supplier = withContext(Dispatchers.IO) { supplierDao.getSupplierById(supplierId) } ?: return@launch
             val newBalance = when (type) {
                 "gave" -> supplier.balance + amount
                 "got"  -> supplier.balance - amount
                 else   -> supplier.balance
             }
-            transactionDao.insertTransaction(
-                Transaction(
-                    partyId = supplierId, partyType = "supplier",
-                    type = type, amount = amount,
-                    balance = newBalance, note = note
+            withContext(Dispatchers.IO) {
+                transactionDao.insertTransaction(
+                    Transaction(
+                        partyId = supplierId, partyType = "supplier",
+                        type = type, amount = amount,
+                        balance = newBalance, note = note
+                    )
                 )
-            )
-            supplierDao.updateSupplier(
-                supplier.copy(balance = newBalance, updatedAt = System.currentTimeMillis())
-            )
+                supplierDao.updateSupplier(
+                    supplier.copy(balance = newBalance, updatedAt = System.currentTimeMillis())
+                )
+            }
             refreshTotals()
         }
     }
 
     fun deleteTransaction(transaction: Transaction, supplierId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val supplier = supplierDao.getSupplierById(supplierId) ?: return@launch
+        viewModelScope.launch {
+            val supplier = withContext(Dispatchers.IO) { supplierDao.getSupplierById(supplierId) } ?: return@launch
             val revertedBalance = when (transaction.type) {
                 "gave" -> supplier.balance - transaction.amount
                 "got"  -> supplier.balance + transaction.amount
                 else   -> supplier.balance
             }
-            transactionDao.deleteTransaction(transaction)
-            supplierDao.updateSupplier(
-                supplier.copy(balance = revertedBalance, updatedAt = System.currentTimeMillis())
-            )
+            withContext(Dispatchers.IO) {
+                transactionDao.deleteTransaction(transaction)
+                supplierDao.updateSupplier(
+                    supplier.copy(balance = revertedBalance, updatedAt = System.currentTimeMillis())
+                )
+            }
             refreshTotals()
         }
     }
@@ -106,8 +110,10 @@ class SupplierViewModel(application: Application) : AndroidViewModel(application
         transactionDao.getTransactionsForParty(supplierId, "supplier")
 
     fun toggleAutoSms(supplier: Supplier) {
-        viewModelScope.launch(Dispatchers.IO) {
-            supplierDao.updateSupplier(supplier.copy(autoSmsEnabled = !supplier.autoSmsEnabled))
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                supplierDao.updateSupplier(supplier.copy(autoSmsEnabled = !supplier.autoSmsEnabled))
+            }
         }
     }
 }
