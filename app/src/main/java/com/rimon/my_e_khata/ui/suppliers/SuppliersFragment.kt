@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.rimon.my_e_khata.databinding.FragmentSuppliersBinding
 import com.rimon.my_e_khata.utils.FormatUtils
 
@@ -33,7 +32,6 @@ class SuppliersFragment : Fragment() {
             intent.putExtra("supplier_id", supplier.id)
             startActivity(intent)
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
 
         binding.etSearch.addTextChangedListener(object : TextWatcher {
@@ -46,8 +44,9 @@ class SuppliersFragment : Fragment() {
             adapter.submitList(suppliers)
             binding.tvEmpty.visibility = if (suppliers.isEmpty()) View.VISIBLE else View.GONE
         }
-        viewModel.totalPayable.observe(viewLifecycleOwner)    { binding.tvWillGive.text = FormatUtils.formatAmount(it) }
-        viewModel.totalReceivable.observe(viewLifecycleOwner) { binding.tvWillGet.text  = FormatUtils.formatAmount(it) }
+
+        viewModel.totalPayable.observe(viewLifecycleOwner) { binding.tvWillGive.text = FormatUtils.formatAmount(it) }
+        viewModel.totalReceivable.observe(viewLifecycleOwner) { binding.tvWillGet.text = FormatUtils.formatAmount(it) }
 
         binding.fabAddSupplier.setOnClickListener {
             startActivity(Intent(requireContext(), AddEditSupplierActivity::class.java))
@@ -55,5 +54,6 @@ class SuppliersFragment : Fragment() {
     }
 
     override fun onResume() { super.onResume(); viewModel.refreshTotals() }
+
     override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }
