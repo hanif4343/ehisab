@@ -34,6 +34,7 @@
         <activity android:name=".ui.customers.AddEditCustomerActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.settings.SettingsActivity" />
+        <activity android:name=".ui.settings.SmsHistoryActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -64,5 +65,4 @@
         <receiver android:name=".service.SmsAlarmReceiver" android:exported="false" />
 
     </application>
-
 </manifest>
