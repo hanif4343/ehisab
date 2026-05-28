@@ -23,14 +23,12 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val prefs = AppPreferences.getInstance(requireContext())
-        binding.tvBusinessName.text = prefs.businessName
-        binding.tvLastBackup.text = if (prefs.lastBackupTime > 0)
-            "Last backup: ${FormatUtils.formatDateShort(prefs.lastBackupTime)}"
-        else "No backup yet"
-
         binding.btnOpenSettings.setOnClickListener {
             startActivity(Intent(requireContext(), SettingsActivity::class.java))
+        }
+
+        binding.btnSmsHistory.setOnClickListener {
+            startActivity(Intent(requireContext(), SmsHistoryActivity::class.java))
         }
     }
 
