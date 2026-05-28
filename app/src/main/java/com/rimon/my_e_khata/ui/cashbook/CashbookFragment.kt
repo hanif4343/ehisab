@@ -8,10 +8,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.lifecycleScope
 import com.rimon.my_e_khata.R
 import com.rimon.my_e_khata.databinding.FragmentCashbookBinding
 import com.rimon.my_e_khata.utils.FormatUtils
+import kotlinx.coroutines.launch
 
 class CashbookFragment : Fragment() {
 
@@ -31,36 +32,36 @@ class CashbookFragment : Fragment() {
         adapter = CashbookAdapter { entry ->
             AlertDialog.Builder(requireContext())
                 .setTitle("Delete Entry")
-                .setMessage("Delete this entry?")
                 .setPositiveButton("Delete") { _, _ -> viewModel.deleteEntry(entry) }
                 .setNegativeButton("Cancel", null).show()
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
 
         viewModel.entries.observe(viewLifecycleOwner) { entries ->
             adapter.submitList(entries)
             binding.tvEmpty.visibility = if (entries.isEmpty()) View.VISIBLE else View.GONE
         }
+
         viewModel.currentBalance.observe(viewLifecycleOwner) { balance ->
             binding.tvBalance.text = FormatUtils.formatAmount(balance)
             binding.tvBalance.setTextColor(
                 requireContext().getColor(if (balance >= 0) R.color.green_settled else R.color.red_due)
             )
         }
-        viewModel.totalIn.observe(viewLifecycleOwner)  { binding.tvCashIn.text  = FormatUtils.formatAmount(it) }
+
+        viewModel.totalIn.observe(viewLifecycleOwner) { binding.tvCashIn.text = FormatUtils.formatAmount(it) }
         viewModel.totalOut.observe(viewLifecycleOwner) { binding.tvCashOut.text = FormatUtils.formatAmount(it) }
 
-        binding.btnCashIn.setOnClickListener  { showAddDialog("in") }
+        binding.btnCashIn.setOnClickListener { showAddDialog("in") }
         binding.btnCashOut.setOnClickListener { showAddDialog("out") }
     }
 
     private fun showAddDialog(type: String) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_cashbook, null)
-        val etAmount   = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_amount)
-        val etNote     = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_note)
+        val etAmount = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_amount)
+        val etNote = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_note)
         val etCategory = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_category)
-        val btnCalc    = dialogView.findViewById<android.widget.ImageButton>(R.id.btn_calculator)
+        val btnCalc = dialogView.findViewById<android.widget.ImageButton>(R.id.btn_calculator)
 
         btnCalc?.setOnClickListener {
             com.rimon.my_e_khata.ui.common.CalculatorDialog(requireContext()) { result ->
@@ -73,15 +74,16 @@ class CashbookFragment : Fragment() {
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
                 val amount = FormatUtils.parseAmount(etAmount.text?.toString() ?: "")
+                val note = etNote.text?.toString()?.trim() ?: ""
+                val category = etCategory.text?.toString()?.trim() ?: ""
                 if (amount > 0) {
-                    viewModel.addEntry(type, amount,
-                        etNote.text?.toString()?.trim() ?: "",
-                        etCategory.text?.toString()?.trim() ?: "")
+                    viewModel.addEntry(type, amount, note, category)
                 } else {
                     Toast.makeText(requireContext(), "Enter valid amount", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null).show()
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }
