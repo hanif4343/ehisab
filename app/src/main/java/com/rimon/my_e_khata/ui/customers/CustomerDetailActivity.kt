@@ -14,6 +14,7 @@ import com.rimon.my_e_khata.data.model.Customer
 import com.rimon.my_e_khata.databinding.ActivityCustomerDetailBinding
 import com.rimon.my_e_khata.service.SmsService
 import com.rimon.my_e_khata.ui.common.CalculatorDialog
+import com.rimon.my_e_khata.ui.common.ReminderDialog
 import com.rimon.my_e_khata.ui.common.TransactionAdapter
 import com.rimon.my_e_khata.utils.AppPreferences
 import com.rimon.my_e_khata.utils.FormatUtils
@@ -38,7 +39,6 @@ class CustomerDetailActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[CustomerViewModel::class.java]
 
-        // Setup RecyclerView
         val adapter = TransactionAdapter(
             currencySymbol = "৳",
             onDelete = { tx ->
@@ -51,12 +51,8 @@ class CustomerDetailActivity : AppCompatActivity() {
         )
         binding.recyclerTransactions.layoutManager = LinearLayoutManager(this)
         binding.recyclerTransactions.adapter = adapter
+        viewModel.getTransactions(customerId).observe(this) { adapter.submitList(it) }
 
-        viewModel.getTransactions(customerId).observe(this) { txList ->
-            adapter.submitList(txList)
-        }
-
-        // Observe customer data
         viewModel.customers.observe(this) { list ->
             customer = list.find { it.id == customerId }
             customer?.let { updateUI(it) }
@@ -87,6 +83,16 @@ class CustomerDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun showReminderDialog() {
+        val c = customer ?: return
+        ReminderDialog(
+            context      = this,
+            customerId   = customerId.toInt(),
+            customerName = c.name,
+            balanceText  = FormatUtils.formatAmount(c.balance)
+        ).show()
+    }
+
     private fun setupClickListeners() {
         binding.toolbar.setNavigationOnClickListener { finish() }
 
@@ -100,18 +106,8 @@ class CustomerDetailActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnReminder.setOnClickListener {
-            val cal = java.util.Calendar.getInstance()
-            android.app.DatePickerDialog(this, { _, y, m, d ->
-                Toast.makeText(this, "Reminder set: $d/${m+1}/$y", Toast.LENGTH_SHORT).show()
-            }, cal.get(java.util.Calendar.YEAR),
-               cal.get(java.util.Calendar.MONTH),
-               cal.get(java.util.Calendar.DAY_OF_MONTH)).show()
-        }
-
-        binding.btnSetReminder.setOnClickListener {
-            binding.btnReminder.performClick()
-        }
+        binding.btnReminder.setOnClickListener { showReminderDialog() }
+        binding.btnSetReminder.setOnClickListener { showReminderDialog() }
 
         binding.btnSendSmsNow.setOnClickListener {
             val c = customer ?: return@setOnClickListener
@@ -121,7 +117,7 @@ class CustomerDetailActivity : AppCompatActivity() {
             }
             lifecycleScope.launch {
                 val prefs = AppPreferences.getInstance(this@CustomerDetailActivity)
-                val msg = SmsService.buildMessage(
+                val msg   = SmsService.buildMessage(
                     prefs.smsTemplateCustomer, c.name,
                     FormatUtils.formatAmount(c.balance, ""), prefs.businessName
                 )
@@ -141,24 +137,19 @@ class CustomerDetailActivity : AppCompatActivity() {
 
     private fun showTransactionDialog(type: String) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_transaction, null)
-        val etAmount = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_amount)
-        val etNote   = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_note)
-
+        val etAmount   = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_amount)
+        val etNote     = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_note)
         dialogView.findViewById<android.widget.ImageButton>(R.id.btn_calculator)?.setOnClickListener {
             CalculatorDialog(this) { result -> etAmount.setText(result) }.show()
         }
-
         AlertDialog.Builder(this)
             .setTitle(if (type == "gave") "You Gave ৳" else "You Got ৳")
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
                 val amount = FormatUtils.parseAmount(etAmount.text?.toString() ?: "")
                 val note   = etNote.text?.toString()?.trim() ?: ""
-                if (amount > 0) {
-                    viewModel.addTransaction(customerId, type, amount, note)
-                } else {
-                    Toast.makeText(this, "Enter a valid amount", Toast.LENGTH_SHORT).show()
-                }
+                if (amount > 0) viewModel.addTransaction(customerId, type, amount, note)
+                else Toast.makeText(this, "Enter a valid amount", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null).show()
     }
